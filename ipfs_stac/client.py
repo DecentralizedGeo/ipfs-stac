@@ -43,9 +43,13 @@ def ensure_data_fetched(func) -> Callable[..., Any]:
 
 def fetchCID(cid: str) -> bytes:
     """
-    Fetches data from CID
+    Fetches data from CID.
 
-    :param str cid: CID to retrieve
+    Args:
+        cid (str): CID to retrieve.
+
+    Returns:
+        bytes: Retrieved data.
     """
     try:
         fs = fsspec.filesystem("ipfs")
@@ -87,10 +91,13 @@ class Web3:
         stac_endpoint: str = "",
     ) -> None:
         """
-        web3 client constructor
+        Web3 client constructor.
 
-        :param str local_gateway: Local gateway endpoint without port.
-        :param str stac_endpoint: STAC browser endpoint
+        Args:
+            local_gateway (str): Local gateway endpoint without port. Defaults to "localhost".
+            api_port (int): API port. Defaults to 5001.
+            gateway_port (int): Gateway port. Defaults to 8080.
+            stac_endpoint (str): STAC browser endpoint. Defaults to "stac.easierdata.info".
         """
         self.local_gateway = local_gateway
         self.stac_endpoint = stac_endpoint
@@ -117,10 +124,10 @@ class Web3:
 
     def overwrite_config(self, path: Optional[Path] = None) -> None:
         """
-        *only use if you know what you're doing*
-        Overwrite configuration file with configuration in memory
+        Overwrite configuration file with configuration in memory.
 
-        :param str path: Path to configuration file (optional)
+        Args:
+            path (Optional[Path]): Path to configuration file (optional).
         """
 
         # Get user's home directory
@@ -135,21 +142,28 @@ class Web3:
 
     def _get_collections_ids(self) -> List[str]:
         """
-        Get the collection ids from the stac endpoint
+        Get the collection ids from the STAC endpoint.
+
+        Returns:
+            List[str]: List of collection ids.
         """
         return [collection.id for collection in self.client.get_collections()]
 
     def getCollections(self) -> Sequence[Collection]:
         """
-        Returns list of collections from STAC endpoint
+        Returns list of collections from STAC endpoint.
+
+        Returns:
+            Sequence[Collection]: List of collections.
         """
         return list(self.client.get_collections())
 
     def _is_process_running(self) -> bool:
-        """Check if IPFS daemon process is running
+        """
+        Check if IPFS daemon process is running.
 
         Returns:
-            bool: True if process is running, False otherwise
+            bool: True if process is running, False otherwise.
         """
         process_name = "ipfs"
         for proc in psutil.process_iter(["name"]):
@@ -161,7 +175,9 @@ class Web3:
         return False
 
     def shutdown_process(self) -> None:
-        """Shutdown the IPFS daemon process"""
+        """
+        Shutdown the IPFS daemon process.
+        """
         if self.daemon_status:
             print("Shutdown process is running...")
 
@@ -181,10 +197,11 @@ class Web3:
             self.daemon_status = None
 
     def startDaemon(self) -> None:
-        """Start the IPFS daemon process
+        """
+        Start the IPFS daemon process.
 
         Raises:
-            Exception: If the IPFS daemon fails to start
+            Exception: If the IPFS daemon fails to start.
         """
         try:
             if not self._is_process_running():
@@ -205,9 +222,13 @@ class Web3:
 
     def getFromCID(self, cid: str) -> Union[bytes, None]:
         """
-        Retrieves raw data from CID
+        Retrieves raw data from CID.
 
-        :param str cid: CID to retrieve
+        Args:
+            cid (str): CID to retrieve.
+
+        Returns:
+            Union[bytes, None]: Retrieved data or None if not found.
         """
         content_cid = None
         try:
@@ -221,10 +242,14 @@ class Web3:
         self, bbox: List[float], collections: List[str]
     ) -> ItemCollection:
         """
-        Search STAC catalog by bounding box and return array of items
+        Search STAC catalog by bounding box and return array of items.
 
-        :param bbox array: Array of coordinates for bounding box
-        :param collections array: Array of collection names
+        Args:
+            bbox (List[float]): Array of coordinates for bounding box.
+            collections (List[str]): Array of collection names.
+
+        Returns:
+            ItemCollection: Collection of items.
         """
         catalog = Client.open(self.stac_endpoint)
         search_results = catalog.search(
@@ -242,8 +267,11 @@ class Web3:
         through the resulting STAC Items, either :meth:`ItemSearch.item_collections`,
         :meth:`ItemSearch.items`, or :meth:`ItemSearch.items_as_dicts`.
 
-        :param kwargs: Keyword arguments for the search method.
-        :return: list of pystac.Item objects
+        Args:
+            kwargs: Keyword arguments for the search method.
+
+        Returns:
+            ItemCollection: List of pystac.Item objects.
         """
         try:
             search_results = self.client.search(**kwargs)
@@ -262,11 +290,15 @@ class Web3:
         self, bbox: List[float], collections: List[str], index: int
     ) -> Item:
         """
-        Search STAC catalog by bounding box and return singular item
+        Search STAC catalog by bounding box and return singular item.
 
-        :param bbox array: Array of coordinates for bounding box
-        :param collections array: Array of collection names
-        :param index int: Index of item to return
+        Args:
+            bbox (List[float]): Array of coordinates for bounding box.
+            collections (List[str]): Array of collection names.
+            index (int): Index of item to return.
+
+        Returns:
+            Item: STAC item.
         """
         # Validate Bounding box coordinates before trying to search
         if (
@@ -287,20 +319,22 @@ class Web3:
     def getAssetNames(
         self, stac_obj: Union[CollectionClient, ItemCollection, Item]
     ) -> Union[List[str], None]:
-        """Get a list of unique asset names from a STAC object
+        """
+        Get a list of unique asset names from a STAC object.
 
         Args:
-            stac_obj (Union[CollectionClient, ItemCollection, Item], optional): STAC object to get asset names from.
+            stac_obj (Union[CollectionClient, ItemCollection, Item]): STAC object to get asset names from.
 
         Returns:
-            List[str]: A sorted list of unique asset names.
+            Union[List[str], None]: A sorted list of unique asset names.
         """
 
         def get_asset_names_from_items(items: List[Item]) -> List[str]:
-            """Get asset names from list of items
+            """
+            Get asset names from list of items.
 
             Args:
-                items (List[Item]): List of STAC item objects
+                items (List[Item]): List of STAC item objects.
 
             Returns:
                 List[str]: A sorted list of unique asset names.
@@ -341,15 +375,16 @@ class Web3:
     def getAssetFromItem(
         self, item: Item, asset_name: str, fetch_data: bool = False
     ) -> Union["Asset", None]:
-        """Returns asset object from item
+        """
+        Returns asset object from item.
 
         Args:
-            item (Item): STAC catalog item
-            asset_name (str): Name of asset to return
+            item (Item): STAC catalog item.
+            asset_name (str): Name of asset to return.
             fetch_data (bool, optional): Fetch data from CID. Defaults to False.
 
         Returns:
-            Asset: Asset object
+            Union[Asset, None]: Asset object.
         """
         try:
             item_dict = item.to_dict()
@@ -370,10 +405,14 @@ class Web3:
         self, item: Item, assets: List[str]
     ) -> Union[List["Asset"], None]:
         """
-        Returns array of asset objects from item
+        Returns array of asset objects from item.
 
-        :param item: STAC catalog item
-        :param asset array: Names of asset to return (strings)
+        Args:
+            item (Item): STAC catalog item.
+            assets (List[str]): Names of asset to return (strings).
+
+        Returns:
+            Union[List[Asset], None]: List of asset objects.
         """
         try:
             assetArray = []
@@ -387,10 +426,11 @@ class Web3:
 
     def writeCID(self, cid: str, filePath: Union[str, Path]) -> None:
         """
-        Write CID contents to local file system (WIP)
+        Write CID contents to local file system (WIP).
 
-        :param CID str: CID to retrieve
-        :param filePath str: Directory to write contents to
+        Args:
+            cid (str): CID to retrieve.
+            filePath (Union[str, Path]): Directory to write contents to.
         """
         try:
             # Check filepath instance and convert to Path object if necessary
@@ -407,7 +447,6 @@ class Web3:
         except Exception as e:
             print(f"Error with CID write: {e}")
 
-    # Use overrideDefault decorator to force local gateway usage
     def uploadToIPFS(
         self,
         content: Union[str, Path, bytes],
@@ -421,10 +460,10 @@ class Web3:
 
         Args:
             content (Union[str, Path, bytes]): The path to the file or bytes data to be uploaded.
-            file_name (str, optional): The name of the file. Defaults to None.
-            pin_content (bool, optional): Pin locally to protect added files from garbage collection. Defaults to False.
-            mfs_path (str, optional): Add reference to Files API (MFS) at the provided path. Defaults to None.
-            chunker (str, optional): Chunking algorithm, size-[bytes], rabin-[min]-[avg]-[max] or buzhash. Defaults to None.
+            file_name (Optional[str]): The name of the file. Defaults to None.
+            pin_content (bool): Pin locally to protect added files from garbage collection. Defaults to False.
+            mfs_path (Optional[str]): Add reference to Files API (MFS) at the provided path. Defaults to None.
+            chunker (Optional[str]): Chunking algorithm, size-[bytes], rabin-[min]-[avg]-[max] or buzhash. Defaults to None.
 
         Raises:
             ValueError: If neither `file_path` nor `bytes_data` is provided.
@@ -499,14 +538,15 @@ class Web3:
     def pinned_list(
         self, pin_type: str = "recursive", names: bool = False
     ) -> Union[List[str], None]:
-        """Fetch pinned CIDs from local node
+        """
+        Fetch pinned CIDs from local node.
 
         Args:
-            pin_type (str, optional): The type of pinned keys to list. Can be "direct", "indirect", "recursive", or "all". Defaults to "recursive".
-            names (bool, optional): Include pin names in the output. Defaults to False.
+            pin_type (str): The type of pinned keys to list. Can be "direct", "indirect", "recursive", or "all". Defaults to "recursive".
+            names (bool): Include pin names in the output. Defaults to False.
 
         Returns:
-            List[str]: List of pinned CIDs. If `names` is True, returns list of json objects.
+            Union[List[str], None]: List of pinned CIDs. If `names` is True, returns list of json objects.
         """
         # Setting param options
         param_options = f"type={pin_type}&names={names}"
@@ -527,9 +567,13 @@ class Web3:
 
     def getCSVDataframeFromCID(self, cid: str) -> pd.DataFrame:
         """
-        Parse CSV CID to pandas dataframe
+        Parse CSV CID to pandas dataframe.
 
-        :param str cid: CID to retrieve
+        Args:
+            cid (str): CID to retrieve.
+
+        Returns:
+            pd.DataFrame: Parsed DataFrame.
         """
         try:
             data = self.getFromCID(cid)
@@ -560,10 +604,14 @@ class Asset:
         name: Optional[str] = None,
     ) -> None:
         """
-        Constructor for asset object
+        Constructor for asset object.
 
-        :param cid str: The CID associated with the object
-        :param local_gateway str: Local gateway endpoint
+        Args:
+            cid (str): The CID associated with the object.
+            local_gateway (str): Local gateway endpoint.
+            api_port (int): API port.
+            fetch_data (bool): Fetch data from CID. Defaults to False.
+            name (Optional[str]): Name of the asset. Defaults to None.
         """
         self.cid: str = cid
         self.local_gateway = local_gateway
@@ -584,7 +632,10 @@ class Asset:
 
     def _is_pinned_to_local_node(self) -> bool:
         """
-        Check if CID is pinned to local node
+        Check if CID is pinned to local node.
+
+        Returns:
+            bool: True if pinned, False otherwise.
         """
         resp = requests.post(
             f"http://{self.local_gateway}:{self.api_port}/api/v0/pin/ls?arg=/ipfs/{self.cid}",
@@ -601,6 +652,9 @@ class Asset:
             return False
 
     def fetch(self) -> None:
+        """
+        Fetch data for the asset.
+        """
         try:
             self.data = fetchCID(self.cid)
         except Exception as e:
@@ -609,6 +663,9 @@ class Asset:
     # Pin to local kubo node
     # @ensure_data_fetched
     def pin(self) -> None:
+        """
+        Pin the asset to the local node.
+        """
         self._is_pinned_to_local_node()
         if self.is_pinned:
             print("Content is already pinned")
@@ -627,10 +684,11 @@ class Asset:
 
     def addToMFS(self, filename: str, mfs_path: str) -> None:
         """
-        Add CID to MFS
+        Add CID to MFS.
 
-        :param filename str: Name of file
-        :param mfs_path str: Path in MFS
+        Args:
+            filename (str): Name of file.
+            mfs_path (str): Path in MFS.
         """
         if filename is None or filename == "":
             filename = self.name
@@ -648,6 +706,15 @@ class Asset:
     # Returns asset as np array if image
     @ensure_data_fetched
     def to_np_ndarray(self, dtype: Union[np.dtype, type] = np.float32) -> np.ndarray:
+        """
+        Convert asset data to numpy ndarray.
+
+        Args:
+            dtype (Union[np.dtype, type]): Data type for the ndarray. Defaults to np.float32.
+
+        Returns:
+            np.ndarray: Numpy array of the asset data.
+        """
         if self.data is None:
             raise ValueError("Data for asset has not been fetched yet")
         with rasterio.open(BytesIO(self.data)) as dataset:
