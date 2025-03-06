@@ -88,7 +88,7 @@ class Web3:
         local_gateway: str = "localhost",
         api_port: int = 5001,
         gateway_port: int = 8080,
-        stac_endpoint: str = "",
+        stac_endpoint: str = "https://stac.easierdata.info",
     ) -> None:
         """
         Web3 client constructor.
@@ -97,7 +97,7 @@ class Web3:
             local_gateway (str): Local gateway endpoint without port. Defaults to "localhost".
             api_port (int): API port. Defaults to 5001.
             gateway_port (int): Gateway port. Defaults to 8080.
-            stac_endpoint (str): STAC browser endpoint. Defaults to "stac.easierdata.info".
+            stac_endpoint (str): STAC browser endpoint. Defaults to "https://stac.easierdata.info".
         """
         self.local_gateway = local_gateway
         self.stac_endpoint = stac_endpoint
