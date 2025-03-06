@@ -3,15 +3,26 @@ repo_url: https://github.com/DecentralizedGeo/ipfs-stac
 nav: # Navigation links
   - Home: index.md # Home page
   - Client Module: client.md # Documentation for client module
+  - Examples: examples.md # Examples
 
 theme:
   name: material
   user_color_mode_toggle: true
   features:
     - navigation.top
+    - content.code.copy
   highlightjs: true
   hljs_languages:
     - python
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
 
 plugins:
   - search
