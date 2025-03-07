@@ -32,6 +32,19 @@ REMOTE_GATEWAYS = [
 
 
 def ensure_data_fetched(func) -> Callable[..., Any]:
+    """
+    Decorator that ensures data is fetched before executing the decorated method.
+    This decorator checks if the `data` attribute of the instance is `None`. If it is,
+    it calls the `fetch` method to retrieve the data before proceeding to call the
+    decorated method.
+
+    Args:
+        func (Callable[..., Any]): The method to be decorated.
+
+    Returns:
+        Callable[..., Any]: The wrapped method that ensures data is fetched.
+    """
+
     def wrapper(self, *args, **kwargs) -> Any:
         if self.data is None:
             print("Data for asset has not been fetched yet. Fetching now...")
@@ -264,8 +277,8 @@ class Web3:
         Search STAC catalog for items using the search method from pystac-client.
 
         Note: No request is sent to the API until a method is called to iterate
-        through the resulting STAC Items, either :meth:`ItemSearch.item_collections`,
-        :meth:`ItemSearch.items`, or :meth:`ItemSearch.items_as_dicts`.
+        through the resulting STAC Items, either `ItemSearch.item_collections`,
+        `ItemSearch.items`, or `ItemSearch.items_as_dicts`.
 
         Args:
             kwargs: Keyword arguments for the search method.
