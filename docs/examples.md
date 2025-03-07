@@ -60,7 +60,7 @@ landsat_items
 [<Item id=LC09_L1TP_015033_20221015_20221015_02_T1>, <Item id=LC09_L1GT_015033_20211231_20220122_02_T2>]
 ```
 
-If we wanted to retrieve a specific asset from the collection, we can use the `getAssetNames` method to get a list of assets available in `landsat_items` object.
+If we wanted to understand the assets our items contain, we can use the `getAssetNames` method to get a list of assets available in `landsat_items` object.
 
 ```python
 easier.getAssetNames(landsat_items)
