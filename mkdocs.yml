@@ -9,6 +9,9 @@ nav: # Navigation links
           - Asset: asset.md
           - Web3: web3.md
           - Module Functions: functions.md
+  - How-to-Guides:
+      - Examples: examples.md # Examples
+      - Install ipfs-stac: how-to-install.md # Installation guide
 
 theme:
   name: material
