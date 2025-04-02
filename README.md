@@ -1,5 +1,9 @@
 # IPFS-STAC
 
+[![PyPI version](https://badge.fury.io/py/ipfs-stac.svg)](https://badge.fury.io/py/ipfs-stac)
+[![PyPI license](https://img.shields.io/pypi/l/ansicolortags.svg)](https://pypi.python.org/pypi/ansicolortags/)
+[![PyPI pyversions](https://img.shields.io/pypi/pyversions/ansicolortags.svg)](https://pypi.python.org/pypi/ipfs-stac/)
+
 `ipfs-stac` is a Python library that provides functionality for querying and interacting with STAC catalogs enriched with IPFS. The library supports seamless operations between leveraging STAC APIs enriched with IPFS metadata and interfacing with IPFS itself given a node. Visit the [documentation](https://decentralizedgeo.github.io/ipfs-stac/) for more information.
 
 ## Features
@@ -16,10 +20,6 @@
 - Host IPFS content on the mutable file system (MFS)
 
 ---
-
-### Language Support
-
-The client currently supports Python versions 3+
 
 ### Installation
 
