@@ -5,3 +5,5 @@
 [Go to Client Module Documentation](client.md)
 
 [How to use `ipfs-stac`](examples.md)
+
+<a href="https://github.com/DecentralizedGeo/ipfs-stac/releases" Target="_blank">Release Notes</a>
