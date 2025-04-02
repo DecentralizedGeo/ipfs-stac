@@ -11,10 +11,12 @@ license = { text = "MIT" }
 readme = "README.md"
 requires-python = ">=3.11,<4" # Specify your python version requirement here
 classifiers = [
-    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
+    "Intended Audience :: Developers",
 ]
+keywords = ["IPFS", "imagery", "STAC", "catalog", "decentralized"]
 
 # [project.urls]
 # homepage = "https://www.easierdata.org"
