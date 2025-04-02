@@ -8,7 +8,7 @@ python pip install ipfs-stac
 
 ## Development Installation
 
-we use <a href="https://python-poetry.org/" target="_blank">poetry</a> for dependency management.
+We use <a href="https://python-poetry.org/docs/#installation" target="_blank">poetry</a> for dependency management.
 
 To install a development version from source:
 
@@ -19,9 +19,9 @@ python -m venv .venv
 poetry install --with dev
 ```
 
-## Documentation
+## Documentation Installation
 
-we use <a href="https://www.mkdocs.org/" target="_blank">mkdocs</a> and the <a href="https://mkdocs.github.io/mkdocs-material/" target="_blank">material theme</a> extension to build and generate our documentation.
+We use <a href="https://www.mkdocs.org/" target="_blank">mkdocs</a> and the <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank">material theme</a> extension to build and generate our documentation.
 
 To install the documentation dependencies:
 
