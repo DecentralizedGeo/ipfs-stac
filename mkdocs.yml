@@ -2,8 +2,13 @@ site_name: ipfs-stac Documentation # Your project name
 repo_url: https://github.com/DecentralizedGeo/ipfs-stac
 nav: # Navigation links
   - Home: index.md # Home page
-  - Client Module: client.md # Documentation for client module
-  - Examples: examples.md # Examples
+  - Reference:
+      # - Client Module: client.md # Documentation for client module
+      - Client Module:
+          - Overview: client.md
+          - Asset: asset.md
+          - Web3: web3.md
+          - Module Functions: functions.md
 
 theme:
   name: material
