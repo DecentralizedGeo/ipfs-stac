@@ -1,26 +1,24 @@
 # Standard Library Imports
-import os
-import json
-from io import StringIO, BytesIO
-from pathlib import Path
-from typing import Callable, List, Optional, Sequence
-import warnings
-from typing import Union, Iterator, Any
-import subprocess
 import atexit
+import json
+import os
+import subprocess
+import warnings
+from io import BytesIO, StringIO
+from pathlib import Path
+from typing import Any, Callable, List, Optional, Sequence, Union
 
 # Third Party Imports
 import fsspec
-import requests
-import pandas as pd
-from bs4 import BeautifulSoup
-from pystac_client import Client, CollectionClient
-from pystac import Collection, Item, ItemCollection
 import numpy as np
-import rasterio
-from yaspin import yaspin
+import pandas as pd
 import psutil
-
+import rasterio
+import requests
+from bs4 import BeautifulSoup
+from pystac import Collection, Item, ItemCollection
+from pystac_client import Client, CollectionClient
+from yaspin import yaspin
 
 # Global Variables
 ENV_VAR_NAME = "IPFS_GATEWAY"
@@ -31,7 +29,7 @@ REMOTE_GATEWAYS = [
 ]
 
 
-def ensure_data_fetched(func) -> Callable[..., Any]:
+def ensure_data_fetched(func: Callable) -> Callable[..., Any]:
     """
     Decorator that ensures data is fetched before executing the decorated method.
     This decorator checks if the `data` attribute of the instance is `None`. If it is,
@@ -46,6 +44,9 @@ def ensure_data_fetched(func) -> Callable[..., Any]:
     """
 
     def wrapper(self, *args, **kwargs) -> Any:
+        """
+        Wrapper function that ensures data is fetched before executing the decorated method.
+        """
         if self.data is None:
             print("Data for asset has not been fetched yet. Fetching now...")
             self.fetch()
@@ -71,7 +72,10 @@ def fetchCID(cid: str) -> bytes:
         with fs.open(f"ipfs://{cid}", "rb") as contents:
             total_size = fs.size(f"ipfs://{cid}")
             with yaspin(
-                text=f"Fetching {cid.split('/')[-1]} - {progress / 1048576:.2f}/{fs.size(f'ipfs://{cid}') / 1048576:.2f} MB",
+                text=(
+                    f"Fetching {cid.split('/')[-1]} - {progress / 1048576:.2f}/"
+                    f"{fs.size(f'ipfs://{cid}') / 1048576:.2f} MB"
+                ),
                 color=None,
             ) as spinner:
                 file_data = bytearray()
@@ -82,7 +86,9 @@ def fetchCID(cid: str) -> bytes:
                         break
                     file_data.extend(chunk)
                     progress += len(chunk)
-                    spinner.text = f"Fetching {cid.split('/')[-1]} - {progress / 1048576:.2f}/{total_size / 1048576:.2f} MB"
+                    spinner.text = (
+                        f"Fetching {cid.split('/')[-1]} - {progress / 1048576:.2f}/{total_size / 1048576:.2f} MB"
+                    )
 
             if file_data:
                 spinner.ok("✅ ")
@@ -251,9 +257,7 @@ class Web3:
             raise e
         return content_cid
 
-    def searchSTACByBox(
-        self, bbox: List[float], collections: List[str]
-    ) -> ItemCollection:
+    def searchSTACByBox(self, bbox: List[float], collections: List[str]) -> ItemCollection:
         """
         Search STAC catalog by bounding box and return array of items.
 
@@ -272,7 +276,7 @@ class Web3:
 
         return search_results.item_collection()
 
-    def searchSTAC(self, **kwargs) -> ItemCollection:
+    def searchSTAC(self, **kwargs: Any) -> ItemCollection:
         """
         Search STAC catalog for items using the search method from pystac-client.
 
@@ -299,9 +303,7 @@ class Web3:
                 print(f"Error: {e}")
             return ItemCollection([])
 
-    def searchSTACByBoxIndex(
-        self, bbox: List[float], collections: List[str], index: int
-    ) -> Item:
+    def searchSTACByBoxIndex(self, bbox: List[float], collections: List[str], index: int) -> Item:
         """
         Search STAC catalog by bounding box and return singular item.
 
@@ -314,11 +316,7 @@ class Web3:
             Item: STAC item.
         """
         # Validate Bounding box coordinates before trying to search
-        if (
-            not isinstance(bbox, list)
-            or len(bbox) != 4
-            or not all(isinstance(coord, float) for coord in bbox)
-        ):
+        if not isinstance(bbox, list) or len(bbox) != 4 or not all(isinstance(coord, float) for coord in bbox):
             raise ValueError("bbox must be a list of four float numbers")
 
         catalog = Client.open(self.stac_endpoint)
@@ -329,9 +327,7 @@ class Web3:
 
         return search_results.item_collection()[index]
 
-    def getAssetNames(
-        self, stac_obj: Union[CollectionClient, ItemCollection, Item]
-    ) -> Union[List[str], None]:
+    def getAssetNames(self, stac_obj: Union[CollectionClient, ItemCollection, Item]) -> Union[List[str], None]:
         """
         Get a list of unique asset names from a STAC object.
 
@@ -359,9 +355,7 @@ class Web3:
             return sorted(asset_names)
 
         if not stac_obj:
-            raise ValueError(
-                "STAC Object (CollectionClient, ItemCollection, Item) must be provided"
-            )
+            raise ValueError("STAC Object (CollectionClient, ItemCollection, Item) must be provided")
 
         if isinstance(stac_obj, CollectionClient):
             try:
@@ -383,9 +377,7 @@ class Web3:
         else:
             raise ValueError("STAC Object must be a Collection, Item, or ItemCollection")
 
-    def getAssetFromItem(
-        self, item: Item, asset_name: str, fetch_data: bool = False
-    ) -> Union["Asset", None]:
+    def getAssetFromItem(self, item: Item, asset_name: str, fetch_data: bool = False) -> Union["Asset", None]:
         """
         Returns asset object from item.
 
@@ -399,9 +391,7 @@ class Web3:
         """
         try:
             item_dict = item.to_dict()
-            cid = item_dict["assets"][f"{asset_name}"]["alternate"]["IPFS"][
-                "href"
-            ].split("/")[-1]
+            cid = item_dict["assets"][f"{asset_name}"]["alternate"]["IPFS"]["href"].split("/")[-1]
             return Asset(
                 cid,
                 self.local_gateway,
@@ -418,9 +408,7 @@ class Web3:
         except ValueError as e:
             print(f"ValueError with getting asset: {e}")
 
-    def getAssetsFromItem(
-        self, item: Item, assets: List[str]
-    ) -> Union[List["Asset"], None]:
+    def getAssetsFromItem(self, item: Item, assets: List[str]) -> Union[List["Asset"], None]:
         """
         Returns array of asset objects from item.
 
@@ -432,7 +420,6 @@ class Web3:
             Union[List[Asset], None]: List of asset objects.
         """
         try:
-            assetArray = []
 
             return [self.getAssetFromItem(item, i, fetch_data=False) for i in assets]
         except (KeyError, AttributeError, TypeError, ValueError) as e:
@@ -606,7 +593,9 @@ class Web3:
 
             # Parse for contents endpoint
             soup = BeautifulSoup(data, "html.parser")
-            endpoint = f"{soup.find_all('a')[0].get('href').replace('.tech', '.io')}{soup.find_all('a')[-1].get('href')}"
+            endpoint = (
+                f"{soup.find_all('a')[0].get('href').replace('.tech', '.io')}{soup.find_all('a')[-1].get('href')}"
+            )
 
             response = requests.get(endpoint, timeout=10)
             csv_data = StringIO(response.text)
