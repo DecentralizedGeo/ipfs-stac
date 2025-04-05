@@ -467,7 +467,7 @@ class Web3:
         pin_content: bool = False,
         mfs_path: Optional[str] = None,
         chunker: Optional[str] = None,
-    ) -> None:
+    ) -> str:
         """
         Uploads a file or bytes data to IPFS.
 
@@ -476,7 +476,8 @@ class Web3:
             file_name (Optional[str]): The name of the file. Defaults to None.
             pin_content (bool): Pin locally to protect added files from garbage collection. Defaults to False.
             mfs_path (Optional[str]): Add reference to Files API (MFS) at the provided path. Defaults to None.
-            chunker (Optional[str]): Chunking algorithm, size-[bytes], rabin-[min]-[avg]-[max] or buzhash. Defaults to None.
+            chunker (Optional[str]): Chunking algorithm, size-[bytes], rabin-[min]-[avg]-[max]
+                or buzhash. Defaults to None.
 
         Raises:
             ValueError: If neither `file_path` nor `bytes_data` is provided.
@@ -487,17 +488,46 @@ class Web3:
             str: The CID (Content Identifier) of the uploaded content.
         """
 
-        # Setting param options
+        param_options = self._build_param_options(pin_content, mfs_path, chunker)
+        components = self._prepare_components(content, file_name)
+        file_payload = self._prepare_file_payload(components)
+
+        try:
+            response = requests.post(
+                f"http://{self.local_gateway}:{self.api_port}/api/v0/add?{param_options}",
+                files=file_payload,
+                timeout=10,
+            )
+            response.raise_for_status()
+
+            if response.status_code == 200:
+                data = response.json()
+                print(f"Successfully added, {data['Name']}, to IPFS. CID: {data['Hash']}")
+                print(f"Click here to view: http://{data['Hash']}.ipfs.{self.local_gateway}:{self.gateway_port}")
+                return data["Hash"]
+
+        except requests.exceptions.Timeout:
+            print("The request timed out")
+        except requests.exceptions.RequestException as e:
+            print(f"An error occurred: {e}")
+
+    def _build_param_options(self, pin_content: bool, mfs_path: Optional[str], chunker: Optional[str]) -> str:
+        """
+        Builds the parameter options string for the IPFS add request.
+        """
         param_options = f"cid-version=1&pin={pin_content}"
         if mfs_path:
             param_options = f"{param_options}&to-files={mfs_path}"
         if chunker:
             param_options = f"{param_options}&chunker={chunker}"
+        return param_options
 
-        # Define empty payload dictionary
+    def _prepare_components(self, content: Union[str, Path, bytes], file_name: Optional[str]) -> dict:
+        """
+        Prepares the components dictionary based on the content type.
+        """
         components = {"content": b"", "name": None}
 
-        # Check the type of content and handle accordingly
         if isinstance(content, bytes):
             components["content"] = content
             if not file_name:
@@ -508,54 +538,36 @@ class Web3:
                 with Path.open(file_path) as f:
                     components["content"] = f.read()
                     components["name"] = file_path.name
-                # Override the file name if user provides one
                 if file_name:
                     components["name"] = file_name
             else:
-                raise FileNotFoundError(
-                    f"The file path provided does not exist. Please check {content}"
-                )
+                raise FileNotFoundError(f"The file path provided does not exist. Please check {content}")
         else:
             raise ValueError("`content` must be of type `Union[str, Path, bytes]`.")
+        return components
 
-        # put the components together as a file payload
+    def _prepare_file_payload(self, components: dict) -> dict:
+        """
+        Prepares the file payload for the IPFS add request.
+
+        Args:
+            components (dict): A dictionary containing the content and name of the file.
+
+        Returns:
+            dict: A dictionary suitable for the 'files' parameter in requests.post.
+        """
         if components["name"] is not None:
-            file_payload = {"file": (components["name"], components["content"])}
+            return {"file": (components["name"], components["content"])}
         else:
-            file_payload = {"file": components["content"]}
+            return {"file": components["content"]}
 
-        try:
-            response = requests.post(
-                f"http://{self.local_gateway}:{self.api_port}/api/v0/add?{param_options}",
-                files=file_payload,
-                timeout=10,
-            )
-            response.raise_for_status()  # Raise an exception for HTTP errors
-
-            # response.raise_for_status()  # Raise an exception for HTTP errors
-            if response.status_code == 200:
-                data = response.json()
-                print(
-                    f"Successfully added, {data['Name']}, to IPFS. CID: {data['Hash']}"
-                )
-                print(
-                    f"Click here to view: http://{data['Hash']}.ipfs.{self.local_gateway}:{self.gateway_port}"
-                )
-                return data["Hash"]
-
-        except requests.exceptions.Timeout:
-            print("The request timed out")
-        except requests.exceptions.RequestException as e:
-            print(f"An error occurred: {e}")
-
-    def pinned_list(
-        self, pin_type: str = "recursive", names: bool = False
-    ) -> Union[List[str], None]:
+    def pinned_list(self, pin_type: str = "recursive", names: bool = False) -> Union[List[str], None]:
         """
         Fetch pinned CIDs from local node.
 
         Args:
-            pin_type (str): The type of pinned keys to list. Can be "direct", "indirect", "recursive", or "all". Defaults to "recursive".
+            pin_type (str): The type of pinned keys to list. Can be "direct", "indirect",
+                "recursive", or "all". Defaults to "recursive".
             names (bool): Include pin names in the output. Defaults to False.
 
         Returns:
