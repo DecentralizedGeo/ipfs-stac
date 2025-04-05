@@ -227,11 +227,11 @@ class Web3:
             )
             if heartbeat_response.status_code != 200:
                 warnings.warn(
-                    "IPFS Daemon is running but still can't connect. Check your IPFS configuration."
+                    "IPFS Daemon is running but still can't connect. Check your IPFS configuration.", stacklevel=2
                 )
-        except Exception as exc:
+        except requests.exceptions.RequestException as exc:
             print(f"Error starting IPFS daemon: {exc}")
-            raise Exception("Failed to start IPFS daemon")
+            raise RuntimeError("Failed to start IPFS daemon") from exc
 
     def getFromCID(self, cid: str) -> Union[bytes, None]:
         """
@@ -367,7 +367,7 @@ class Web3:
             try:
                 items = stac_obj.get_items()
                 return get_asset_names_from_items(list(items))
-            except Exception as e:
+            except (ValueError, TypeError, AttributeError) as e:
                 print(f"Error with getting asset names: {e}")
         elif isinstance(stac_obj, ItemCollection):
             try:
@@ -381,9 +381,7 @@ class Web3:
             except Exception as e:
                 print(f"Error with getting asset names: {e}")
         else:
-            raise ValueError(
-                "STAC Object must be a Collection, Item, or ItemCollection"
-            )
+            raise ValueError("STAC Object must be a Collection, Item, or ItemCollection")
 
     def getAssetFromItem(
         self, item: Item, asset_name: str, fetch_data: bool = False
@@ -411,8 +409,14 @@ class Web3:
                 fetch_data=fetch_data,
                 name=asset_name,
             )
-        except Exception as e:
-            print(f"Error with getting asset: {e}")
+        except KeyError as e:
+            print(f"KeyError with getting asset: {e}")
+        except AttributeError as e:
+            print(f"AttributeError with getting asset: {e}")
+        except TypeError as e:
+            print(f"TypeError with getting asset: {e}")
+        except ValueError as e:
+            print(f"ValueError with getting asset: {e}")
 
     def getAssetsFromItem(
         self, item: Item, assets: List[str]
@@ -430,11 +434,8 @@ class Web3:
         try:
             assetArray = []
 
-            for i in assets:
-                assetArray.append(self.getAssetFromItem(item, i, fetch_data=False))
-
-            return assetArray
-        except Exception as e:
+            return [self.getAssetFromItem(item, i, fetch_data=False) for i in assets]
+        except (KeyError, AttributeError, TypeError, ValueError) as e:
             print(f"Error with getting assets: {e}")
 
     def writeCID(self, cid: str, filePath: Union[str, Path]) -> None:
@@ -612,7 +613,7 @@ class Web3:
             df = pd.read_csv(csv_data)
 
             return df
-        except Exception as e:
+        except requests.exceptions.RequestException as e:
             print(f"Error with dataframe retrieval: {e}")
 
         # Return an empty DataFrame
